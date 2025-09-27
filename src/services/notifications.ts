@@ -9,6 +9,8 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 })
 
@@ -102,15 +104,21 @@ class NotificationService {
     delaySeconds: number = 0
   ): Promise<string | null> {
     try {
-      const notificationId = await Notifications.scheduleNotificationAsync({
+      const notificationRequest: any = {
         content: {
           title,
           body,
           data,
           sound: true,
         },
-        trigger: delaySeconds > 0 ? { seconds: delaySeconds } : null,
-      })
+      }
+
+      if (delaySeconds > 0) {
+        notificationRequest.trigger = { seconds: delaySeconds }
+      }
+
+      const notificationId =
+        await Notifications.scheduleNotificationAsync(notificationRequest)
 
       return notificationId
     } catch (error) {

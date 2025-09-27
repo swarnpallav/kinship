@@ -57,6 +57,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
     justifyContent: 'center',
     paddingHorizontal: 24,
+    minHeight: '100%', // Ensure full height on mobile web
   },
   title: {
     fontSize: 24,

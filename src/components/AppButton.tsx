@@ -1,5 +1,12 @@
 import React from 'react'
-import { Pressable, Text, PressableProps, StyleSheet } from 'react-native'
+import {
+  Pressable,
+  Text,
+  PressableProps,
+  StyleSheet,
+  Platform,
+} from 'react-native'
+import { getAccessibleProps } from '../utils'
 
 type Variant = 'primary' | 'secondary' | 'outline'
 type Size = 'sm' | 'md' | 'lg'
@@ -25,8 +32,17 @@ export default function AppButton({
     styles[`${size}Text`],
   ]
 
+  // Debug logging for web
+  if (Platform.OS === 'web' && __DEV__) {
+    console.log('AppButton render:', { title, variant, size, style })
+  }
+
   return (
-    <Pressable style={buttonStyle} {...rest}>
+    <Pressable
+      style={[buttonStyle, Platform.OS === 'web' && styles.webButton] as any}
+      {...getAccessibleProps('button', title)}
+      {...rest}
+    >
       <Text style={textStyle}>{title}</Text>
     </Pressable>
   )
@@ -37,6 +53,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 8,
+    minHeight: 44, // Minimum touch target size for accessibility
+    minWidth: 44,
+  },
+  webButton: Platform.select({
+    web: {
+      cursor: 'pointer',
+      userSelect: 'none',
+      outline: 'none',
+      display: 'flex', // Ensure button is visible on web
+      visibility: 'visible',
+      opacity: 1,
+    },
+    default: {},
+  }),
+  pressed: {
+    opacity: 0.8,
+    transform: [{ scale: 0.98 }],
   },
   primary: {
     backgroundColor: '#ef4444',

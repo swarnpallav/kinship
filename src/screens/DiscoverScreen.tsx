@@ -96,11 +96,23 @@ export default function DiscoverScreen() {
 
       {/* Action Buttons */}
       <View style={styles.actionsContainer}>
-        <Pressable onPress={handlePass} style={styles.passButton}>
+        <Pressable
+          onPress={handlePass}
+          style={styles.passButton}
+          accessible={true}
+          accessibilityRole='button'
+          accessibilityLabel='Pass on this profile'
+        >
           <Text style={styles.actionIcon}>✕</Text>
         </Pressable>
 
-        <Pressable onPress={handleLike} style={styles.likeButton}>
+        <Pressable
+          onPress={handleLike}
+          style={styles.likeButton}
+          accessible={true}
+          accessibilityRole='button'
+          accessibilityLabel='Like this profile'
+        >
           <Text style={styles.actionIcon}>♥</Text>
         </Pressable>
       </View>

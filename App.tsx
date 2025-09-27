@@ -1,4 +1,6 @@
 import React, { useEffect } from 'react'
+import { Platform } from 'react-native'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { RootNavigator } from './src/navigation'
 import { AuthProvider } from './src/context'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -19,6 +21,34 @@ const queryClient = new QueryClient({
 
 export default function App() {
   useEffect(() => {
+    // Add mobile web touch fixes
+    if (Platform.OS === 'web') {
+      const style = document.createElement('style')
+      style.textContent = `
+        /* Mobile Web Touch Fixes - Less aggressive approach */
+        [role="button"] {
+          touch-action: manipulation;
+          -webkit-tap-highlight-color: transparent;
+          cursor: pointer;
+        }
+        
+        [role="button"]:active {
+          -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Ensure buttons are visible and clickable on mobile */
+        @media (max-width: 768px) {
+          [role="button"] {
+            display: flex;
+            visibility: visible;
+            opacity: 1;
+          }
+        }
+      `
+      document.head.appendChild(style)
+    }
+
+    // Request notification permissions on app start
     // Request notification permissions on app start
     const initializeNotifications = async () => {
       try {
@@ -63,10 +93,12 @@ export default function App() {
   }, [])
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <RootNavigator />
-      </AuthProvider>
-    </QueryClientProvider>
+    <SafeAreaProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <RootNavigator />
+        </AuthProvider>
+      </QueryClientProvider>
+    </SafeAreaProvider>
   )
 }

@@ -3,6 +3,12 @@ module.exports = {
   env: {
     es6: true,
     node: true,
+    browser: true,
+  },
+  globals: {
+    __DEV__: 'readonly',
+    document: 'readonly',
+    window: 'readonly',
   },
   extends: ['eslint:recommended'],
   parser: '@typescript-eslint/parser',
@@ -38,6 +44,7 @@ module.exports = {
       files: ['*.config.js', '*.config.ts', 'babel.config.js', 'jest.setup.js'],
       env: {
         node: true,
+        jest: true,
       },
       rules: {
         'no-console': 'off',

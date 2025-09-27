@@ -1,13 +1,17 @@
 import React from 'react'
 import { TextInput, TextInputProps, StyleSheet } from 'react-native'
+import { getAccessibleProps } from '../utils'
 
 type Props = TextInputProps
 
-export default function AppTextInput({ style, ...rest }: Props) {
+export default function AppTextInput({ style, placeholder, ...rest }: Props) {
   return (
     <TextInput
       style={[styles.input, style]}
       placeholderTextColor='#a3a3a3'
+      placeholder={placeholder}
+      accessible={true}
+      accessibilityLabel={placeholder}
       {...rest}
     />
   )

@@ -1,16 +1,26 @@
 import React from 'react'
-import { Pressable, Text, PressableProps } from 'react-native'
+import { Pressable, Text, PressableProps, StyleSheet } from 'react-native'
 
 type Props = PressableProps & { title: string }
 
 export default function Button({ title, style, ...rest }: Props) {
   return (
-    <Pressable
-      className='px-4 py-2 rounded-md bg-blue-600 active:bg-blue-700'
-      style={style}
-      {...rest}
-    >
-      <Text className='text-white text-base font-medium'>{title}</Text>
+    <Pressable style={[styles.button, style] as any} {...rest}>
+      <Text style={styles.text}>{title}</Text>
     </Pressable>
   )
 }
+
+const styles = StyleSheet.create({
+  button: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+    backgroundColor: '#2563eb',
+  },
+  text: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+})

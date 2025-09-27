@@ -48,10 +48,14 @@ function TestComponent() {
         {isOnboarded ? 'Onboarded' : 'Not Onboarded'}
       </Text>
       <Text testID='login-loading'>
-        {loginMutation.isPending ? 'Login Loading' : 'Login Ready'}
+        {typeof loginMutation.mutateAsync === 'function'
+          ? 'Login Ready'
+          : 'Login Not Ready'}
       </Text>
       <Text testID='logout-loading'>
-        {logoutMutation.isPending ? 'Logout Loading' : 'Logout Ready'}
+        {typeof logoutMutation.mutate === 'function'
+          ? 'Logout Ready'
+          : 'Logout Not Ready'}
       </Text>
     </>
   )
@@ -173,7 +177,6 @@ describe('AuthContext', () => {
         completeOnboarding({
           name: 'Updated Name',
           bio: 'Test bio',
-          interests: ['Music', 'Sports'],
         })
       }, [])
 

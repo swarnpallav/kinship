@@ -71,8 +71,6 @@ export default function ProfileSetupScreen({ navigation }: Props) {
       completeOnboarding({
         name: name.trim(),
         bio: bio.trim(),
-        profilePhoto: profilePhotoUri,
-        interests: selectedInterests,
       })
     }
   }

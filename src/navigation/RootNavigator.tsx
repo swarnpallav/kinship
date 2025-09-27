@@ -2,7 +2,8 @@ import React from 'react'
 import { NavigationContainer } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
-import { View, ActivityIndicator } from 'react-native'
+import { View, ActivityIndicator, StyleSheet } from 'react-native'
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import {
   Heart,
   MessageCircle,
@@ -46,58 +47,66 @@ function AuthNavigator() {
 }
 
 function MainTabsNavigator() {
+  const insets = useSafeAreaInsets()
+
   return (
-    <MainTabs.Navigator
-      screenOptions={{
-        tabBarActiveTintColor: '#ef4444', // primary-500
-        tabBarInactiveTintColor: '#737373', // neutral-500
-        tabBarStyle: {
-          backgroundColor: '#ffffff',
-          borderTopColor: '#e5e5e5',
-          paddingBottom: 5,
-          paddingTop: 5,
-          height: 60,
-        },
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '500',
-        },
-        headerShown: false,
-      }}
-    >
-      <MainTabs.Screen
-        name='Discover'
-        component={DiscoverScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <Compass size={size} color={color} />
-          ),
+    <SafeAreaView style={styles.tabContainer} edges={['top', 'left', 'right']}>
+      <MainTabs.Navigator
+        screenOptions={{
+          tabBarActiveTintColor: '#ef4444', // primary-500
+          tabBarInactiveTintColor: '#737373', // neutral-500
+          tabBarStyle: {
+            backgroundColor: '#ffffff',
+            borderTopColor: '#e5e5e5',
+            paddingBottom: Math.max(insets.bottom, 5),
+            paddingTop: 5,
+            height: 60 + Math.max(insets.bottom, 0),
+          },
+          tabBarLabelStyle: {
+            fontSize: 12,
+            fontWeight: '500',
+          },
+          headerShown: false,
         }}
-      />
-      <MainTabs.Screen
-        name='Matches'
-        component={MatchesStackNavigator}
-        options={{
-          tabBarIcon: ({ color, size }) => <Heart size={size} color={color} />,
-        }}
-      />
-      <MainTabs.Screen
-        name='Profile'
-        component={ProfileScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => <User size={size} color={color} />,
-        }}
-      />
-      <MainTabs.Screen
-        name='Settings'
-        component={SettingsScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <Settings size={size} color={color} />
-          ),
-        }}
-      />
-    </MainTabs.Navigator>
+      >
+        <MainTabs.Screen
+          name='Discover'
+          component={DiscoverScreen}
+          options={{
+            tabBarIcon: ({ color, size }) => (
+              <Compass size={size} {...({ color } as any)} />
+            ),
+          }}
+        />
+        <MainTabs.Screen
+          name='Matches'
+          component={MatchesStackNavigator}
+          options={{
+            tabBarIcon: ({ color, size }) => (
+              <Heart size={size} {...({ color } as any)} />
+            ),
+          }}
+        />
+        <MainTabs.Screen
+          name='Profile'
+          component={ProfileScreen}
+          options={{
+            tabBarIcon: ({ color, size }) => (
+              <User size={size} {...({ color } as any)} />
+            ),
+          }}
+        />
+        <MainTabs.Screen
+          name='Settings'
+          component={SettingsScreen}
+          options={{
+            tabBarIcon: ({ color, size }) => (
+              <Settings size={size} {...({ color } as any)} />
+            ),
+          }}
+        />
+      </MainTabs.Navigator>
+    </SafeAreaView>
   )
 }
 
@@ -106,7 +115,7 @@ export default function RootNavigator() {
 
   if (isLoading) {
     return (
-      <View className='flex-1 justify-center items-center bg-neutral-50 dark:bg-neutral-900'>
+      <View style={styles.loadingContainer}>
         <ActivityIndicator
           size='large'
           color='#ef4444'
@@ -128,3 +137,16 @@ export default function RootNavigator() {
     </NavigationContainer>
   )
 }
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+  },
+  tabContainer: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+})

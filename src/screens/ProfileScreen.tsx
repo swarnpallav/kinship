@@ -11,6 +11,8 @@ export default function ProfileScreen() {
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.contentContainer}
+        contentInsetAdjustmentBehavior='automatic'
+        showsVerticalScrollIndicator={false}
       >
         <Text style={styles.title}>Your Profile</Text>
 
@@ -102,12 +104,14 @@ const styles = StyleSheet.create({
   contentContainer: {
     flexGrow: 1,
     padding: 16,
+    paddingBottom: 20, // Reduced padding since tab bar now handles safe area
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#171717',
     marginBottom: 24,
+    marginTop: 16, // Increased top margin for better spacing
   },
   card: {
     marginBottom: 16,
