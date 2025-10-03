@@ -3,6 +3,7 @@ import { Platform } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { RootNavigator } from './src/navigation'
 import { AuthProvider } from './src/context'
+import { ThemeProvider } from './src/theme'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { notificationService } from './src/services'
 
@@ -94,11 +95,13 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <RootNavigator />
-        </AuthProvider>
-      </QueryClientProvider>
+      <ThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <RootNavigator />
+          </AuthProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
   )
 }

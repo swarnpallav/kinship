@@ -110,23 +110,36 @@ export class GoogleAuthService {
     testScenario?: 'college' | 'personal' | 'custom',
     customEmail?: string
   ): Promise<GoogleUser> {
+    console.log('🧪 Using mock Google authentication for development')
+
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 1500))
 
-    let email = 'user@college.edu' // Default to college email
+    // Rotate between different test scenarios for variety
+    const scenarios = ['college', 'personal'] as const
+    const randomScenario =
+      scenarios[Math.floor(Math.random() * scenarios.length)]
+    const scenario = testScenario || randomScenario
 
-    if (testScenario === 'personal') {
-      email = 'user@gmail.com'
-    } else if (testScenario === 'custom' && customEmail) {
+    let email = 'john.doe@college.edu' // Default to college email
+    let name = 'John Doe'
+
+    if (scenario === 'personal') {
+      email = 'john.doe@gmail.com'
+      name = 'John Doe (Personal)'
+    } else if (scenario === 'custom' && customEmail) {
       email = customEmail
+      name = 'Custom User'
     }
+
+    console.log(`🧪 Mock sign-in scenario: ${scenario}, email: ${email}`)
 
     // Return mock user data - in development, you can change this to test different scenarios
     return {
-      id: 'mock-google-user-id',
+      id: 'mock-google-user-' + Date.now(),
       email,
-      name: 'John Doe',
-      picture: 'https://via.placeholder.com/150',
+      name,
+      picture: 'https://via.placeholder.com/150/4285f4/ffffff?text=👤',
     }
   }
 }

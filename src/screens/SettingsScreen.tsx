@@ -8,8 +8,10 @@ import {
   Alert,
   StyleSheet,
 } from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
 import { AppCard, AppButton } from '../components'
 import { useAuthContext } from '../context'
+import { useTheme } from '../theme'
 import { notificationService } from '../services'
 
 type SettingItem = {
@@ -23,10 +25,11 @@ type SettingItem = {
 
 export default function SettingsScreen() {
   const { logoutMutation } = useAuthContext()
+  const { theme, isDark, themeMode, toggleTheme, setThemeMode } = useTheme()
+  const styles = createStyles(theme)
   const [notifications, setNotifications] = useState(true)
   const [showAge, setShowAge] = useState(true)
   const [showDistance, setShowDistance] = useState(true)
-  const [darkMode, setDarkMode] = useState(false)
 
   const settings: SettingItem[] = [
     {
@@ -50,13 +53,6 @@ export default function SettingsScreen() {
       type: 'toggle',
       value: showDistance,
     },
-    {
-      id: 'dark-mode',
-      title: 'Dark Mode',
-      description: 'Use dark theme throughout the app',
-      type: 'toggle',
-      value: darkMode,
-    },
   ]
 
   const handleToggle = (settingId: string, value: boolean) => {
@@ -69,9 +65,6 @@ export default function SettingsScreen() {
         break
       case 'show-distance':
         setShowDistance(value)
-        break
-      case 'dark-mode':
-        setDarkMode(value)
         break
     }
   }
@@ -105,155 +98,322 @@ export default function SettingsScreen() {
     }
   }
 
+  const handleThemeToggle = (value: boolean) => {
+    if (themeMode === 'system') {
+      // First toggle from system mode: set to opposite of current system theme
+      setThemeMode(value ? 'dark' : 'light')
+    } else {
+      // Already in manual mode, just toggle
+      toggleTheme()
+    }
+  }
+
+  const handleResetToSystem = () => {
+    setThemeMode('system')
+  }
+
+  const isSystemMode = themeMode === 'system'
+  const getThemeDescription = () => {
+    if (isSystemMode) {
+      return `Following system (currently ${isDark ? 'dark' : 'light'})`
+    }
+    return `Manually set to ${isDark ? 'dark' : 'light'} mode`
+  }
+
   return (
-    <View style={styles.container}>
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.contentContainer}
-        contentInsetAdjustmentBehavior='automatic'
-        showsVerticalScrollIndicator={false}
-      >
-        <Text style={styles.title}>Settings</Text>
+    <LinearGradient
+      colors={theme.gradients.velvetAffection as any}
+      style={styles.gradient}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+    >
+      <View style={styles.container}>
+        {/* Decorative background elements */}
+        <View style={styles.decorativeContainer}>
+          <Text style={[styles.decorativeEmoji, styles.emoji1]}>💝</Text>
+          <Text style={[styles.decorativeEmoji, styles.emoji2]}>✨</Text>
+          <Text style={[styles.decorativeEmoji, styles.emoji3]}>💕</Text>
+        </View>
 
-        {/* Preferences */}
-        <AppCard style={styles.card}>
-          <Text style={styles.sectionTitle}>Preferences</Text>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.contentContainer}
+          contentInsetAdjustmentBehavior='automatic'
+          showsVerticalScrollIndicator={false}
+        >
+          <Text style={styles.title}>Settings</Text>
 
-          {settings.map(setting => (
-            <View key={setting.id} style={styles.settingRow}>
-              <View style={styles.settingInfo}>
-                <Text style={styles.settingTitle}>{setting.title}</Text>
-                <Text style={styles.settingDescription}>
-                  {setting.description}
+          {/* Appearance */}
+          <AppCard style={styles.card}>
+            <Text style={styles.sectionTitle}>Appearance</Text>
+
+            <View style={styles.themeRow}>
+              <View style={styles.themeInfo}>
+                <View style={styles.themeTitleRow}>
+                  <Text style={styles.themeTitle}>
+                    {isDark ? '🌙' : '☀️'} {isDark ? 'Dark' : 'Light'} Mode
+                  </Text>
+                  {isSystemMode && (
+                    <View style={styles.systemBadge}>
+                      <Text style={styles.systemBadgeText}>AUTO</Text>
+                    </View>
+                  )}
+                </View>
+                <Text style={styles.themeDescription}>
+                  {getThemeDescription()}
                 </Text>
               </View>
-
-              {setting.type === 'toggle' && (
-                <Switch
-                  value={setting.value}
-                  onValueChange={value => handleToggle(setting.id, value)}
-                  trackColor={{ false: '#d4d4d4', true: '#ef4444' }}
-                  thumbColor={setting.value ? '#ffffff' : '#f5f5f5'}
-                />
-              )}
+              <Switch
+                value={isDark}
+                onValueChange={handleThemeToggle}
+                trackColor={{
+                  false: theme.colors.neutral[300],
+                  true: theme.colors.primary[500],
+                }}
+                thumbColor={theme.colors.background.primary}
+                ios_backgroundColor={theme.colors.neutral[300]}
+              />
             </View>
-          ))}
-        </AppCard>
 
-        {/* Account Actions */}
-        <AppCard style={styles.card}>
-          <Text style={styles.sectionTitle}>Account</Text>
+            {!isSystemMode && (
+              <Pressable
+                style={styles.resetButton}
+                onPress={handleResetToSystem}
+              >
+                <Text style={styles.resetButtonText}>
+                  📱 Reset to System Theme
+                </Text>
+              </Pressable>
+            )}
+          </AppCard>
 
-          <Pressable onPress={handleEditProfile} style={styles.actionRow}>
-            <Text style={styles.actionText}>Edit Profile</Text>
-          </Pressable>
+          {/* Preferences */}
+          <AppCard style={styles.card}>
+            <Text style={styles.sectionTitle}>Preferences</Text>
 
-          <Pressable onPress={handlePrivacySettings} style={styles.actionRow}>
-            <Text style={styles.actionText}>Privacy Settings</Text>
-          </Pressable>
+            {settings.map(setting => (
+              <View key={setting.id} style={styles.settingRow}>
+                <View style={styles.settingInfo}>
+                  <Text style={styles.settingTitle}>{setting.title}</Text>
+                  <Text style={styles.settingDescription}>
+                    {setting.description}
+                  </Text>
+                </View>
 
-          <Pressable onPress={handleSupport} style={styles.actionRow}>
-            <Text style={styles.actionText}>Help & Support</Text>
-          </Pressable>
-        </AppCard>
+                {setting.type === 'toggle' && (
+                  <Switch
+                    value={setting.value}
+                    onValueChange={value => handleToggle(setting.id, value)}
+                    trackColor={{
+                      false: theme.colors.neutral[300],
+                      true: theme.colors.primary[500],
+                    }}
+                    thumbColor={theme.colors.background.primary}
+                    ios_backgroundColor={theme.colors.neutral[300]}
+                  />
+                )}
+              </View>
+            ))}
+          </AppCard>
 
-        {/* Test Notifications */}
-        <AppCard style={styles.card}>
-          <Text style={styles.sectionTitle}>Notifications</Text>
-          <AppButton
-            title='Send Test Notification'
-            variant='outline'
-            onPress={handleTestNotification}
-            size='lg'
-          />
-        </AppCard>
+          {/* Account Actions */}
+          <AppCard style={styles.card}>
+            <Text style={styles.sectionTitle}>Account</Text>
 
-        {/* Sign Out */}
-        <AppCard style={styles.card}>
-          <AppButton
-            title='Sign Out'
-            variant='outline'
-            onPress={() => logoutMutation.mutate()}
-            style={styles.signOutButton}
-            size='lg'
-          />
-        </AppCard>
+            <Pressable onPress={handleEditProfile} style={styles.actionRow}>
+              <Text style={styles.actionText}>Edit Profile</Text>
+            </Pressable>
 
-        {/* App Info */}
-        <View style={styles.appInfo}>
-          <Text style={styles.appVersion}>Kinship v1.0.0</Text>
-        </View>
-      </ScrollView>
-    </View>
+            <Pressable onPress={handlePrivacySettings} style={styles.actionRow}>
+              <Text style={styles.actionText}>Privacy Settings</Text>
+            </Pressable>
+
+            <Pressable onPress={handleSupport} style={styles.actionRow}>
+              <Text style={styles.actionText}>Help & Support</Text>
+            </Pressable>
+          </AppCard>
+
+          {/* Test Notifications */}
+          <AppCard style={styles.card}>
+            <Text style={styles.sectionTitle}>Notifications</Text>
+            <AppButton
+              title='Send Test Notification'
+              variant='outline'
+              onPress={handleTestNotification}
+              size='lg'
+            />
+          </AppCard>
+
+          {/* Sign Out */}
+          <AppCard style={styles.card}>
+            <AppButton
+              title='Sign Out'
+              variant='outline'
+              onPress={() => logoutMutation.mutate()}
+              size='lg'
+            />
+          </AppCard>
+
+          {/* App Info */}
+          <View style={styles.appInfo}>
+            <Text style={styles.appVersion}>Kinship v1.0.0</Text>
+          </View>
+        </ScrollView>
+      </View>
+    </LinearGradient>
   )
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  contentContainer: {
-    flexGrow: 1,
-    padding: 16,
-    paddingBottom: 20, // Reduced padding since tab bar now handles safe area
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#171717',
-    marginBottom: 24,
-    marginTop: 16, // Add top margin for better spacing
-  },
-  card: {
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#171717',
-    marginBottom: 16,
-  },
-  settingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 12,
-  },
-  settingInfo: {
-    flex: 1,
-    marginRight: 16,
-  },
-  settingTitle: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#171717',
-  },
-  settingDescription: {
-    fontSize: 14,
-    color: '#525252',
-    marginTop: 4,
-  },
-  actionRow: {
-    paddingVertical: 12,
-  },
-  actionText: {
-    fontSize: 16,
-    color: '#171717',
-  },
-  signOutButton: {
-    borderColor: '#ef4444',
-  },
-  appInfo: {
-    alignItems: 'center',
-    marginTop: 32,
-    marginBottom: 16,
-  },
-  appVersion: {
-    fontSize: 14,
-    color: '#737373',
-  },
-})
+const createStyles = (theme: any) =>
+  StyleSheet.create({
+    gradient: {
+      flex: 1,
+    },
+    container: {
+      flex: 1,
+      position: 'relative',
+    },
+    decorativeContainer: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      zIndex: 0,
+    },
+    decorativeEmoji: {
+      position: 'absolute',
+      fontSize: 38,
+      opacity: 0.1,
+    },
+    emoji1: {
+      top: '12%',
+      left: '10%',
+      transform: [{ rotate: '-12deg' }],
+      fontSize: 42,
+    },
+    emoji2: {
+      top: '25%',
+      right: '12%',
+      fontSize: 35,
+    },
+    emoji3: {
+      top: '75%',
+      right: '10%',
+      fontSize: 40,
+      transform: [{ rotate: '10deg' }],
+    },
+    scrollView: {
+      flex: 1,
+      zIndex: 1,
+    },
+    contentContainer: {
+      flexGrow: 1,
+      padding: theme.spacing.md,
+      paddingBottom: 120, // Account for floating tab bar (60px) + safe area + spacing
+    },
+    title: {
+      fontSize: theme.typography.fontSizes['2xl'],
+      fontWeight: theme.typography.fontWeights.bold,
+      color: theme.colors.text.primary,
+      marginBottom: theme.spacing.lg,
+      marginTop: theme.spacing.md,
+    },
+    card: {
+      marginBottom: theme.spacing.md,
+    },
+    sectionTitle: {
+      fontSize: theme.typography.fontSizes.lg,
+      fontWeight: theme.typography.fontWeights.semibold,
+      color: theme.colors.text.primary,
+      marginBottom: theme.spacing.md,
+    },
+    themeRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: theme.spacing.xs,
+    },
+    themeInfo: {
+      flex: 1,
+      marginRight: theme.spacing.md,
+    },
+    themeTitleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.xs,
+    },
+    themeTitle: {
+      fontSize: theme.typography.fontSizes.base,
+      fontWeight: theme.typography.fontWeights.semibold,
+      color: theme.colors.text.primary,
+    },
+    systemBadge: {
+      backgroundColor: theme.colors.primary[500],
+      paddingHorizontal: theme.spacing.xs,
+      paddingVertical: 2,
+      borderRadius: theme.borderRadius.sm,
+    },
+    systemBadgeText: {
+      fontSize: theme.typography.fontSizes.xs,
+      fontWeight: theme.typography.fontWeights.bold,
+      color: theme.colors.text.inverse,
+    },
+    themeDescription: {
+      fontSize: theme.typography.fontSizes.sm,
+      color: theme.colors.text.secondary,
+      marginTop: theme.spacing.xs,
+    },
+    resetButton: {
+      marginTop: theme.spacing.md,
+      paddingVertical: theme.spacing.sm,
+      paddingHorizontal: theme.spacing.md,
+      backgroundColor: theme.colors.background.tertiary,
+      borderRadius: theme.borderRadius.md,
+      borderWidth: 1,
+      borderColor: theme.colors.border.light,
+    },
+    resetButtonText: {
+      fontSize: theme.typography.fontSizes.sm,
+      fontWeight: theme.typography.fontWeights.medium,
+      color: theme.colors.text.primary,
+      textAlign: 'center',
+    },
+    settingRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: theme.spacing.sm,
+    },
+    settingInfo: {
+      flex: 1,
+      marginRight: theme.spacing.md,
+    },
+    settingTitle: {
+      fontSize: theme.typography.fontSizes.base,
+      fontWeight: theme.typography.fontWeights.medium,
+      color: theme.colors.text.primary,
+    },
+    settingDescription: {
+      fontSize: theme.typography.fontSizes.sm,
+      color: theme.colors.text.secondary,
+      marginTop: theme.spacing.xs,
+    },
+    actionRow: {
+      paddingVertical: theme.spacing.sm,
+    },
+    actionText: {
+      fontSize: theme.typography.fontSizes.base,
+      color: theme.colors.text.primary,
+    },
+    appInfo: {
+      alignItems: 'center',
+      marginTop: theme.spacing.xl,
+      marginBottom: theme.spacing.md,
+    },
+    appVersion: {
+      fontSize: theme.typography.fontSizes.sm,
+      color: theme.colors.text.tertiary,
+      marginTop: theme.spacing.xs,
+    },
+  })

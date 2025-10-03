@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import * as SecureStore from 'expo-secure-store'
 import { User } from '../types'
 import { GoogleAuthService, GoogleUser } from '../services/googleAuth'
+import { config } from '../config'
 
 type AuthState = {
   user: User | null
@@ -64,7 +65,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const googleSignInMutation = {
     mutateAsync: async (): Promise<GoogleUser> => {
       const googleAuthService = GoogleAuthService.getInstance()
-      const googleUser = await googleAuthService.signInWithGoogle()
+
+      // Use mock or real Google auth based on config
+      const googleUser = config.useMockAuth
+        ? await googleAuthService.mockSignInWithGoogle()
+        : await googleAuthService.signInWithGoogle()
 
       // Convert GoogleUser to User type and store
       const user: User = {
@@ -75,7 +80,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Generate a token (in real app, this would come from your backend)
-      const token = 'google-oauth-token-' + Date.now()
+      const token = config.useMockAuth
+        ? 'mock-google-token-' + Date.now()
+        : 'google-oauth-token-' + Date.now()
 
       await Promise.all([
         SecureStore.setItemAsync(TOKEN_KEY, token),

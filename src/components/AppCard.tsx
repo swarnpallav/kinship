@@ -1,11 +1,15 @@
 import React from 'react'
 import { View, ViewProps, StyleSheet } from 'react-native'
+import { useTheme } from '../theme'
 
 type Props = ViewProps & {
   children: React.ReactNode
 }
 
 export default function AppCard({ children, style, ...rest }: Props) {
+  const { theme, isDark } = useTheme()
+  const styles = createStyles(theme, isDark)
+
   return (
     <View style={[styles.card, style]} {...rest}>
       {children}
@@ -13,20 +17,19 @@ export default function AppCard({ children, style, ...rest }: Props) {
   )
 }
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
+const createStyles = (theme: any, isDark: boolean) =>
+  StyleSheet.create({
+    card: {
+      // Use tertiary background for cards to stand out from screen background
+      backgroundColor: isDark
+        ? theme.colors.background.tertiary
+        : theme.colors.background.primary,
+      borderRadius: theme.borderRadius.lg,
+      padding: theme.spacing.md,
+      ...theme.shadows.md,
+      borderWidth: 1,
+      borderColor: isDark
+        ? theme.colors.border.medium
+        : theme.colors.border.light,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-    borderWidth: 1,
-    borderColor: '#e5e5e5',
-  },
-})
+  })
