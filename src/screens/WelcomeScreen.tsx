@@ -28,7 +28,8 @@ export default function WelcomeScreen({ navigation }: Props) {
           size='lg'
         />
         <Text style={styles.disclaimer}>
-          We'll verify your student status with your college email
+          Use your college email or personal account with college ID
+          verification
         </Text>
       </AppCard>
     </View>

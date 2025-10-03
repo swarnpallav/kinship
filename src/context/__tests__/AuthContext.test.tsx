@@ -11,21 +11,17 @@ jest.mock('expo-secure-store', () => ({
   deleteItemAsync: jest.fn(),
 }))
 
-// Mock the services
-jest.mock('../../services/mockApi', () => ({
-  mockApi: {
-    auth: {
-      login: jest.fn().mockResolvedValue({
-        user: { id: 'test-user', email: 'test@example.com', name: 'Test User' },
-        token: 'mock-token',
-        refreshToken: 'mock-refresh-token',
-      }),
-      me: jest.fn().mockResolvedValue({
-        id: 'test-user',
+// Mock the Google Auth service
+jest.mock('../../services/googleAuth', () => ({
+  GoogleAuthService: {
+    getInstance: jest.fn(() => ({
+      signInWithGoogle: jest.fn().mockResolvedValue({
+        id: 'google-test-user',
         email: 'test@example.com',
         name: 'Test User',
+        picture: 'https://example.com/avatar.jpg',
       }),
-    },
+    })),
   },
 }))
 
@@ -35,7 +31,7 @@ function TestComponent() {
     user,
     isLoading,
     isOnboarded,
-    loginMutation,
+    googleSignInMutation,
     logoutMutation,
     completeOnboarding,
   } = useAuthContext()
@@ -47,10 +43,10 @@ function TestComponent() {
       <Text testID='onboarded'>
         {isOnboarded ? 'Onboarded' : 'Not Onboarded'}
       </Text>
-      <Text testID='login-loading'>
-        {typeof loginMutation.mutateAsync === 'function'
-          ? 'Login Ready'
-          : 'Login Not Ready'}
+      <Text testID='google-signin-loading'>
+        {typeof googleSignInMutation.mutateAsync === 'function'
+          ? 'Google SignIn Ready'
+          : 'Google SignIn Not Ready'}
       </Text>
       <Text testID='logout-loading'>
         {typeof logoutMutation.mutate === 'function'
@@ -99,7 +95,7 @@ describe('AuthContext', () => {
     })
   })
 
-  it('handles login mutation', async () => {
+  it('handles Google sign-in mutation', async () => {
     const { getByTestId } = render(
       <TestWrapper>
         <TestComponent />
@@ -111,36 +107,31 @@ describe('AuthContext', () => {
       expect(getByTestId('loading').children[0]).toBe('Not Loading')
     })
 
-    // Test login mutation
+    // Test Google sign-in mutation
     const { useAuthContext } = require('../AuthContext')
 
     // We need to access the context from within the component
-    function LoginTestComponent() {
-      const { loginMutation } = useAuthContext()
+    function GoogleSignInTestComponent() {
+      const { googleSignInMutation } = useAuthContext()
 
       React.useEffect(() => {
-        loginMutation.mutate({
-          email: 'test@example.com',
-          password: 'password',
-        })
+        googleSignInMutation.mutateAsync()
       }, [])
 
-      return <Text testID='login-test'>Login Test</Text>
+      return <Text testID='google-signin-test'>Google SignIn Test</Text>
     }
 
     const { rerender } = render(
       <TestWrapper>
-        <LoginTestComponent />
+        <GoogleSignInTestComponent />
       </TestWrapper>
     )
 
     await waitFor(() => {
-      // Login should have been called
-      const { mockApi } = require('../../services/mockApi')
-      expect(mockApi.auth.login).toHaveBeenCalledWith(
-        'test@example.com',
-        'password'
-      )
+      // Google sign-in should have been called
+      const { GoogleAuthService } = require('../../services/googleAuth')
+      const mockInstance = GoogleAuthService.getInstance()
+      expect(mockInstance.signInWithGoogle).toHaveBeenCalled()
     })
   })
 

@@ -1,54 +1,28 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { mockApi } from '../services/mockApi'
-import { AuthResponse, User } from '../types'
+import { GoogleAuthService, GoogleUser } from '../services/googleAuth'
+import { User } from '../types'
 
 export function useAuth() {
   const queryClient = useQueryClient()
 
-  // Get current user
-  const meQuery = useQuery({
-    queryKey: ['auth', 'me'],
-    queryFn: mockApi.auth.me,
-    retry: false,
-  })
-
-  // Login mutation
-  const loginMutation = useMutation({
-    mutationFn: ({ email, password }: { email: string; password: string }) =>
-      mockApi.auth.login(email, password),
-    onSuccess: (data: AuthResponse) => {
-      // Update the user cache
-      queryClient.setQueryData(['auth', 'me'], data.user)
-      // Store tokens would happen in AuthContext
+  // Google Sign-in mutation
+  const googleSignInMutation = useMutation({
+    mutationFn: async (): Promise<GoogleUser> => {
+      const googleAuthService = GoogleAuthService.getInstance()
+      return await googleAuthService.signInWithGoogle()
+    },
+    onSuccess: (googleUser: GoogleUser) => {
+      // Convert GoogleUser to User and update cache
+      const user: User = {
+        id: googleUser.id,
+        email: googleUser.email,
+        name: googleUser.name,
+        picture: googleUser.picture,
+      }
+      queryClient.setQueryData(['auth', 'me'], user)
     },
     onError: error => {
-      console.error('Login failed:', error)
-    },
-  })
-
-  // Register mutation
-  const registerMutation = useMutation({
-    mutationFn: ({
-      email,
-      password,
-      name,
-    }: {
-      email: string
-      password: string
-      name: string
-    }) => mockApi.auth.register({ email, password, name }),
-    onSuccess: (data: AuthResponse) => {
-      queryClient.setQueryData(['auth', 'me'], data.user)
-    },
-  })
-
-  // Refresh token mutation
-  const refreshTokenMutation = useMutation({
-    mutationFn: (refreshToken: string) =>
-      mockApi.auth.refreshToken(refreshToken),
-    onSuccess: data => {
-      // Tokens would be updated in AuthContext
-      console.log('Token refreshed:', data)
+      console.error('Google sign-in failed:', error)
     },
   })
 
@@ -65,10 +39,7 @@ export function useAuth() {
   })
 
   return {
-    meQuery,
-    loginMutation,
-    registerMutation,
-    refreshTokenMutation,
+    googleSignInMutation,
     logoutMutation,
   }
 }

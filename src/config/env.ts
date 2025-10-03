@@ -16,6 +16,12 @@ export const config = {
   enableNotifications: true,
   enableAnalytics: false,
 
+  // Authentication
+  useMockAuth: false, // Set to true for development, false for production OAuth
+  googleClientId:
+    process.env.GOOGLE_CLIENT_ID ||
+    '657248796191-h679unjbgnlturbj96c0i5170vn9i2ta.apps.googleusercontent.com',
+
   // Debug
   debug: true,
 } as const

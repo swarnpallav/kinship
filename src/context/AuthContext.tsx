@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import * as SecureStore from 'expo-secure-store'
 import { User } from '../types'
+import { GoogleAuthService, GoogleUser } from '../services/googleAuth'
 
 type AuthState = {
   user: User | null
@@ -9,11 +10,8 @@ type AuthState = {
 }
 
 type AuthContextValue = AuthState & {
-  loginMutation: {
-    mutateAsync: (credentials: {
-      email: string
-      password: string
-    }) => Promise<void>
+  googleSignInMutation: {
+    mutateAsync: () => Promise<GoogleUser>
   }
   logoutMutation: {
     mutate: () => void
@@ -63,26 +61,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const loginMutation = {
-    mutateAsync: async (credentials: { email: string; password: string }) => {
-      // Mock login - replace with real API call
-      const mockUser: User = {
-        id: '1',
-        email: credentials.email,
-        name: 'John Doe',
+  const googleSignInMutation = {
+    mutateAsync: async (): Promise<GoogleUser> => {
+      const googleAuthService = GoogleAuthService.getInstance()
+      const googleUser = await googleAuthService.signInWithGoogle()
+
+      // Convert GoogleUser to User type and store
+      const user: User = {
+        id: googleUser.id,
+        email: googleUser.email,
+        name: googleUser.name,
+        picture: googleUser.picture,
       }
-      const mockToken = 'mock-jwt-token-' + Date.now()
+
+      // Generate a token (in real app, this would come from your backend)
+      const token = 'google-oauth-token-' + Date.now()
 
       await Promise.all([
-        SecureStore.setItemAsync(TOKEN_KEY, mockToken),
-        SecureStore.setItemAsync(USER_KEY, JSON.stringify(mockUser)),
+        SecureStore.setItemAsync(TOKEN_KEY, token),
+        SecureStore.setItemAsync(USER_KEY, JSON.stringify(user)),
       ])
 
       setState(prev => ({
         ...prev,
-        user: mockUser,
+        user,
         isOnboarded: false,
       }))
+
+      return googleUser
     },
   }
 
@@ -120,7 +126,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const value: AuthContextValue = {
     ...state,
-    loginMutation,
+    googleSignInMutation,
     logoutMutation,
     completeOnboarding,
   }

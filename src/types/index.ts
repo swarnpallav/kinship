@@ -4,6 +4,7 @@ export type User = {
   id: UserId
   email: string
   name: string
+  picture?: string
 }
 
 export type Profile = {

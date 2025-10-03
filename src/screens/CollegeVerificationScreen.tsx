@@ -1,13 +1,14 @@
 import React, { useState } from 'react'
 import { View, Text, Alert, ScrollView, StyleSheet } from 'react-native'
 import * as ImagePicker from 'expo-image-picker'
-import { AppButton, AppCard, AppTextInput } from '../components'
+import { AppButton, AppCard } from '../components'
+import { useAuthContext } from '../context'
 import type { AuthStackScreenProps } from '../navigation/types'
 
 type Props = AuthStackScreenProps<'CollegeVerification'>
 
 export default function CollegeVerificationScreen({ navigation }: Props) {
-  const [collegeEmail, setCollegeEmail] = useState('')
+  const { user } = useAuthContext()
   const [idPhotoUri, setIdPhotoUri] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -34,8 +35,8 @@ export default function CollegeVerificationScreen({ navigation }: Props) {
   }
 
   const handleVerify = async () => {
-    if (!collegeEmail.includes('.edu')) {
-      Alert.alert('Invalid Email', 'Please enter a valid college email (.edu)')
+    if (!idPhotoUri) {
+      Alert.alert('Missing ID', 'Please upload your college ID card')
       return
     }
 
@@ -47,7 +48,7 @@ export default function CollegeVerificationScreen({ navigation }: Props) {
     }, 2000)
   }
 
-  const canVerify = collegeEmail.includes('.edu') && idPhotoUri
+  const canVerify = idPhotoUri !== null
 
   return (
     <ScrollView
@@ -56,34 +57,33 @@ export default function CollegeVerificationScreen({ navigation }: Props) {
     >
       <AppCard>
         <Text style={styles.title}>Verify Your College</Text>
-        <Text style={styles.subtitle}>Help us verify your student status</Text>
+        <Text style={styles.subtitle}>
+          Since you're using a personal Gmail account, please upload your
+          college ID card to verify your student status
+        </Text>
 
-        {/* College Email */}
-        <Text style={styles.label}>College Email Address</Text>
-        <AppTextInput
-          placeholder='your.name@college.edu'
-          value={collegeEmail}
-          onChangeText={setCollegeEmail}
-          keyboardType='email-address'
-          autoCapitalize='none'
-          style={styles.input}
-        />
+        {/* Show current email */}
+        <View style={styles.emailContainer}>
+          <Text style={styles.label}>Signed in as:</Text>
+          <Text style={styles.emailText}>{user?.email}</Text>
+        </View>
 
         {/* Student ID Photo */}
-        <Text style={styles.label}>Student ID Photo</Text>
+        <Text style={styles.label}>College ID Card Photo</Text>
         <AppButton
-          title={idPhotoUri ? 'Change ID Photo' : 'Upload Student ID'}
+          title={idPhotoUri ? 'Change ID Card Photo' : 'Upload College ID Card'}
           variant='outline'
           onPress={handlePickIdPhoto}
           style={styles.uploadButton}
           size='lg'
         />
         {idPhotoUri && (
-          <Text style={styles.successText}>✓ Student ID uploaded</Text>
+          <Text style={styles.successText}>✓ College ID card uploaded</Text>
         )}
 
         <Text style={styles.disclaimer}>
-          We'll review your information to verify your student status
+          We'll review your college ID card to verify your student status. This
+          usually takes 1-2 business days.
         </Text>
 
         <AppButton
@@ -134,8 +134,17 @@ const styles = StyleSheet.create({
     color: '#404040',
     marginBottom: 8,
   },
-  input: {
-    marginBottom: 20,
+  emailContainer: {
+    backgroundColor: '#f8f9fa',
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 24,
+  },
+  emailText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#171717',
+    marginTop: 4,
   },
   uploadButton: {
     marginBottom: 20,
