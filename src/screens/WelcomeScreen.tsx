@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Text, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet, Image } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { AppButton, AppCard } from '../components'
 import { useTheme } from '../theme'
@@ -30,8 +30,12 @@ export default function WelcomeScreen({ navigation }: Props) {
 
         {/* App Logo */}
         <View style={styles.logoContainer}>
-          <View style={styles.logoCircle}>
-            <Text style={styles.logoText}>K</Text>
+          <View style={styles.logoWrapper}>
+            <Image
+              source={require('../../assets/logo.png')}
+              style={styles.logo}
+              resizeMode='contain'
+            />
           </View>
           <Text style={styles.title}>Kinship</Text>
           <Text style={styles.subtitle}>
@@ -115,20 +119,17 @@ const createStyles = (theme: any) =>
       marginBottom: theme.spacing['2xl'],
       zIndex: 1,
     },
-    logoCircle: {
-      width: 96,
-      height: 96,
-      backgroundColor: theme.colors.primary[500],
-      borderRadius: theme.borderRadius.full,
+    logoWrapper: {
+      width: 140,
+      height: 140,
       alignItems: 'center',
       justifyContent: 'center',
       marginBottom: theme.spacing.lg,
       ...theme.shadows.xl,
     },
-    logoText: {
-      fontSize: theme.typography.fontSizes['4xl'],
-      fontWeight: theme.typography.fontWeights.bold,
-      color: theme.colors.text.inverse,
+    logo: {
+      width: 280,
+      height: 280,
     },
     title: {
       fontSize: theme.typography.fontSizes['4xl'],
