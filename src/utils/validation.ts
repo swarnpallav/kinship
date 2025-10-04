@@ -5,6 +5,7 @@ export const required = (value: unknown) =>
 // Common college email domains
 const COLLEGE_DOMAINS = [
   '.edu',
+  '.edu.in',
   '.ac.uk',
   '.ac.in',
   '.edu.au',

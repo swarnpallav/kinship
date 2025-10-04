@@ -47,13 +47,12 @@ export default function WelcomeScreen({ navigation }: Props) {
         <AppCard style={styles.card}>
           <Text style={styles.cardTitle}>Ready to connect?</Text>
           <AppButton
-            title='Continue with Google'
-            onPress={() => navigation.navigate('GoogleSignIn')}
+            title='Sign in with Email'
+            onPress={() => navigation.navigate('EmailOTP')}
             size='lg'
           />
           <Text style={styles.disclaimer}>
-            Use your college email or personal account with college ID
-            verification
+            Use your college email address to sign in
           </Text>
         </AppCard>
       </View>

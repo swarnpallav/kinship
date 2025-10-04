@@ -59,16 +59,8 @@ jest.mock('../../screens', () => ({
       { testID: 'welcome-screen' },
       'Welcome Screen'
     ),
-  GoogleSignInScreen: () =>
-    require('react-native').Text(
-      { testID: 'google-signin-screen' },
-      'Google Sign In'
-    ),
-  CollegeVerificationScreen: () =>
-    require('react-native').Text(
-      { testID: 'college-verification-screen' },
-      'College Verification'
-    ),
+  EmailOTPScreen: () =>
+    require('react-native').Text({ testID: 'email-otp-screen' }, 'Email OTP'),
   ProfileSetupScreen: () =>
     require('react-native').Text(
       { testID: 'profile-setup-screen' },

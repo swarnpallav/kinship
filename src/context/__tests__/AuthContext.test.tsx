@@ -11,17 +11,20 @@ jest.mock('expo-secure-store', () => ({
   deleteItemAsync: jest.fn(),
 }))
 
-// Mock the Google Auth service
-jest.mock('../../services/googleAuth', () => ({
-  GoogleAuthService: {
-    getInstance: jest.fn(() => ({
-      signInWithGoogle: jest.fn().mockResolvedValue({
-        id: 'google-test-user',
-        email: 'test@example.com',
+// Mock the Auth service
+jest.mock('../../services/auth', () => ({
+  AuthService: {
+    sendOTP: jest.fn().mockResolvedValue(undefined),
+    verifyOTP: jest.fn().mockResolvedValue({
+      user: {
+        id: 'test-user',
+        email: 'test@college.edu',
         name: 'Test User',
-        picture: 'https://example.com/avatar.jpg',
-      }),
-    })),
+      },
+      token: 'test-token',
+    }),
+    me: jest.fn(),
+    logout: jest.fn(),
   },
 }))
 
@@ -31,7 +34,8 @@ function TestComponent() {
     user,
     isLoading,
     isOnboarded,
-    googleSignInMutation,
+    sendOTPMutation,
+    verifyOTPMutation,
     logoutMutation,
     completeOnboarding,
   } = useAuthContext()
@@ -43,10 +47,15 @@ function TestComponent() {
       <Text testID='onboarded'>
         {isOnboarded ? 'Onboarded' : 'Not Onboarded'}
       </Text>
-      <Text testID='google-signin-loading'>
-        {typeof googleSignInMutation.mutateAsync === 'function'
-          ? 'Google SignIn Ready'
-          : 'Google SignIn Not Ready'}
+      <Text testID='send-otp-ready'>
+        {typeof sendOTPMutation.mutateAsync === 'function'
+          ? 'Send OTP Ready'
+          : 'Send OTP Not Ready'}
+      </Text>
+      <Text testID='verify-otp-ready'>
+        {typeof verifyOTPMutation.mutateAsync === 'function'
+          ? 'Verify OTP Ready'
+          : 'Verify OTP Not Ready'}
       </Text>
       <Text testID='logout-loading'>
         {typeof logoutMutation.mutate === 'function'
@@ -95,7 +104,7 @@ describe('AuthContext', () => {
     })
   })
 
-  it('handles Google sign-in mutation', async () => {
+  it('handles email OTP authentication flow', async () => {
     const { getByTestId } = render(
       <TestWrapper>
         <TestComponent />
@@ -107,31 +116,41 @@ describe('AuthContext', () => {
       expect(getByTestId('loading').children[0]).toBe('Not Loading')
     })
 
-    // Test Google sign-in mutation
+    // Test OTP authentication flow
     const { useAuthContext } = require('../AuthContext')
+    const { AuthService } = require('../../services/auth')
 
     // We need to access the context from within the component
-    function GoogleSignInTestComponent() {
-      const { googleSignInMutation } = useAuthContext()
+    function OTPAuthTestComponent() {
+      const { sendOTPMutation, verifyOTPMutation } = useAuthContext()
 
       React.useEffect(() => {
-        googleSignInMutation.mutateAsync()
+        const testAuth = async () => {
+          await sendOTPMutation.mutateAsync('test@college.edu')
+          await verifyOTPMutation.mutateAsync({
+            email: 'test@college.edu',
+            otp: '123456',
+          })
+        }
+        testAuth()
       }, [])
 
-      return <Text testID='google-signin-test'>Google SignIn Test</Text>
+      return <Text testID='otp-auth-test'>OTP Auth Test</Text>
     }
 
     const { rerender } = render(
       <TestWrapper>
-        <GoogleSignInTestComponent />
+        <OTPAuthTestComponent />
       </TestWrapper>
     )
 
     await waitFor(() => {
-      // Google sign-in should have been called
-      const { GoogleAuthService } = require('../../services/googleAuth')
-      const mockInstance = GoogleAuthService.getInstance()
-      expect(mockInstance.signInWithGoogle).toHaveBeenCalled()
+      // OTP methods should have been called
+      expect(AuthService.sendOTP).toHaveBeenCalledWith('test@college.edu')
+      expect(AuthService.verifyOTP).toHaveBeenCalledWith(
+        'test@college.edu',
+        '123456'
+      )
     })
   })
 

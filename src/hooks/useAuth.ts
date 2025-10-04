@@ -1,28 +1,36 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { GoogleAuthService, GoogleUser } from '../services/googleAuth'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { AuthService } from '../services/auth'
 import { User } from '../types'
 
 export function useAuth() {
   const queryClient = useQueryClient()
 
-  // Google Sign-in mutation
-  const googleSignInMutation = useMutation({
-    mutationFn: async (): Promise<GoogleUser> => {
-      const googleAuthService = GoogleAuthService.getInstance()
-      return await googleAuthService.signInWithGoogle()
-    },
-    onSuccess: (googleUser: GoogleUser) => {
-      // Convert GoogleUser to User and update cache
-      const user: User = {
-        id: googleUser.id,
-        email: googleUser.email,
-        name: googleUser.name,
-        picture: googleUser.picture,
-      }
-      queryClient.setQueryData(['auth', 'me'], user)
+  // Send OTP mutation
+  const sendOTPMutation = useMutation({
+    mutationFn: async (email: string): Promise<void> => {
+      return await AuthService.sendOTP(email)
     },
     onError: error => {
-      console.error('Google sign-in failed:', error)
+      console.error('Send OTP failed:', error)
+    },
+  })
+
+  // Verify OTP mutation
+  const verifyOTPMutation = useMutation({
+    mutationFn: async (params: {
+      email: string
+      otp: string
+    }): Promise<any> => {
+      return await AuthService.verifyOTP(params.email, params.otp)
+    },
+    onSuccess: (data: any) => {
+      // Update user cache after successful verification
+      if (data.user) {
+        queryClient.setQueryData(['auth', 'me'], data.user)
+      }
+    },
+    onError: error => {
+      console.error('Verify OTP failed:', error)
     },
   })
 
@@ -39,7 +47,8 @@ export function useAuth() {
   })
 
   return {
-    googleSignInMutation,
+    sendOTPMutation,
+    verifyOTPMutation,
     logoutMutation,
   }
 }

@@ -5,8 +5,7 @@ import type { CompositeScreenProps } from '@react-navigation/native'
 // Auth Stack Types
 export type AuthStackParamList = {
   Welcome: undefined
-  GoogleSignIn: undefined
-  CollegeVerification: undefined
+  EmailOTP: undefined
   ProfileSetup: undefined
 }
 

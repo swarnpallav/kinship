@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import * as SecureStore from 'expo-secure-store'
 import { User } from '../types'
-import { GoogleAuthService, GoogleUser } from '../services/googleAuth'
+import { AuthService } from '../services/auth'
 import { config } from '../config'
 
 type AuthState = {
@@ -11,8 +11,11 @@ type AuthState = {
 }
 
 type AuthContextValue = AuthState & {
-  googleSignInMutation: {
-    mutateAsync: () => Promise<GoogleUser>
+  sendOTPMutation: {
+    mutateAsync: (email: string) => Promise<void>
+  }
+  verifyOTPMutation: {
+    mutateAsync: (params: { email: string; otp: string }) => Promise<User>
   }
   logoutMutation: {
     mutate: () => void
@@ -62,30 +65,58 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const googleSignInMutation = {
-    mutateAsync: async (): Promise<GoogleUser> => {
-      const googleAuthService = GoogleAuthService.getInstance()
-
-      // Use mock or real Google auth based on config
-      const googleUser = config.useMockAuth
-        ? await googleAuthService.mockSignInWithGoogle()
-        : await googleAuthService.signInWithGoogle()
-
-      // Convert GoogleUser to User type and store
-      const user: User = {
-        id: googleUser.id,
-        email: googleUser.email,
-        name: googleUser.name,
-        picture: googleUser.picture,
+  const sendOTPMutation = {
+    mutateAsync: async (email: string): Promise<void> => {
+      // In mock mode, just simulate sending OTP
+      if (config.useMockAuth) {
+        console.log('🧪 Mock: OTP sent to', email)
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        return
       }
 
-      // Generate a token (in real app, this would come from your backend)
-      const token = config.useMockAuth
-        ? 'mock-google-token-' + Date.now()
-        : 'google-oauth-token-' + Date.now()
+      // Call backend to send OTP
+      await AuthService.sendOTP(email)
+    },
+  }
+
+  const verifyOTPMutation = {
+    mutateAsync: async (params: {
+      email: string
+      otp: string
+    }): Promise<User> => {
+      let userData: any
+
+      // In mock mode, accept any 6-digit OTP
+      if (config.useMockAuth) {
+        console.log('🧪 Mock: Verifying OTP', params.otp, 'for', params.email)
+        await new Promise(resolve => setTimeout(resolve, 1000))
+
+        if (params.otp.length !== 6) {
+          throw new Error('Invalid OTP')
+        }
+
+        userData = {
+          user: {
+            id: 'mock-user-' + Date.now(),
+            email: params.email,
+            name: params.email.split('@')[0],
+          },
+          token: 'mock-token-' + Date.now(),
+        }
+      } else {
+        // Call backend to verify OTP
+        userData = await AuthService.verifyOTP(params.email, params.otp)
+      }
+
+      const user: User = {
+        id: userData.user.id,
+        email: userData.user.email,
+        name: userData.user.name,
+        picture: userData.user.picture,
+      }
 
       await Promise.all([
-        SecureStore.setItemAsync(TOKEN_KEY, token),
+        SecureStore.setItemAsync(TOKEN_KEY, userData.token),
         SecureStore.setItemAsync(USER_KEY, JSON.stringify(user)),
       ])
 
@@ -95,7 +126,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isOnboarded: false,
       }))
 
-      return googleUser
+      return user
     },
   }
 
@@ -133,7 +164,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const value: AuthContextValue = {
     ...state,
-    googleSignInMutation,
+    sendOTPMutation,
+    verifyOTPMutation,
     logoutMutation,
     completeOnboarding,
   }

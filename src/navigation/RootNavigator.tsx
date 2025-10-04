@@ -27,8 +27,7 @@ import { useAuthContext } from '../context'
 import { useTheme } from '../theme'
 import {
   WelcomeScreen,
-  GoogleSignInScreen,
-  CollegeVerificationScreen,
+  EmailOTPScreen,
   ProfileSetupScreen,
   DiscoverScreen,
   ProfileScreen,
@@ -49,11 +48,7 @@ function AuthNavigator() {
   return (
     <AuthStack.Navigator screenOptions={{ headerShown: false }}>
       <AuthStack.Screen name='Welcome' component={WelcomeScreen} />
-      <AuthStack.Screen name='GoogleSignIn' component={GoogleSignInScreen} />
-      <AuthStack.Screen
-        name='CollegeVerification'
-        component={CollegeVerificationScreen}
-      />
+      <AuthStack.Screen name='EmailOTP' component={EmailOTPScreen} />
       <AuthStack.Screen name='ProfileSetup' component={ProfileSetupScreen} />
     </AuthStack.Navigator>
   )

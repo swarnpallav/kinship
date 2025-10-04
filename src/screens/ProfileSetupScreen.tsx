@@ -118,8 +118,8 @@ export default function ProfileSetupScreen({ navigation }: Props) {
           </View>
 
           {/* Name */}
-          <Text style={styles.label}>Name</Text>
           <AppTextInput
+            label='Name'
             placeholder='Your name'
             value={name}
             onChangeText={setName}
@@ -127,8 +127,8 @@ export default function ProfileSetupScreen({ navigation }: Props) {
           />
 
           {/* Bio */}
-          <Text style={styles.label}>Bio</Text>
           <AppTextInput
+            label='Bio'
             placeholder='Tell us about yourself...'
             value={bio}
             onChangeText={setBio}
